@@ -6,7 +6,7 @@
 #include <sstream>
 namespace HTTP
 {
-    enum Method
+    enum Method // TODO: muss mir da was einfallen lassen
     {
         GET,
         POST,
@@ -70,6 +70,7 @@ namespace HTTP
         HeaderRequest();
         void processRequest(std::string fileLocation);
         void printFile();
+        //TODO: body content
     };
     class Response
     {
