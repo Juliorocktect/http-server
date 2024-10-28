@@ -3,7 +3,7 @@ void Server::createSocket()
 {
 }
 
-int startServer(int port)
+int startServer(int port,PathListener *pathListener)
 {
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd == -1)
@@ -72,6 +72,7 @@ int startServer(int port)
             //process bytes
             HTTP::HeaderRequest *req = new HTTP::HeaderRequest();
             req->processRequest(std::string(buf, 0, recived));
+            pathListener->processPath(req->path);
             req->printFile();
             HTTP::Response response = HTTP::Response();
             response.statusCode = 200;

@@ -1,6 +1,8 @@
 #include <iostream>
+#include <string>
 #include "src/http/HTTP.h"
 #include "src/server/Server.h"
+#include "src/httpHandler/Handler.h"
 
 int main(int argc, char const *argv[])
 {
@@ -8,5 +10,7 @@ int main(int argc, char const *argv[])
     HTTP::HeaderRequest headerR = HTTP::HeaderRequest();
     headerR.processRequest("/home/julio/Documents/code/http/Request.txt");
     headerR.printFile(); */
-    return startServer(9090);
+    PathListener *lis = new PathListener();
+    //lis->pathsListenTo.push_back();
+    return startServer(9090,);
 }

@@ -8,6 +8,7 @@
 #include <string.h>
 #include <netdb.h>
 #include "../http/HTTP.h"
+#include "../httpHandler/Handler.h"
 
 class Server
 {
@@ -23,4 +24,4 @@ private:
     int socket;
     void createSocket();
 };
-int startServer(int port);
+int startServer(int port,PathListener *listener);
