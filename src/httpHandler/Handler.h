@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include<vector>
+#include <vector>
 // vllt ne callback funktion als parameter ?
 //der body der response sollte json sein
 //
@@ -8,7 +8,9 @@
 class PathLinker {
     public: 
         std::string path;
-        //(std::string) (*) pointer to path process function
+        const char* (*fPtr) ();
+        PathLinker();
+        PathLinker(std::string path,const char* (*pFpTr));
 };
 class PathListener{
     //linking between funtion + path
