@@ -75,14 +75,17 @@ namespace HTTP
         }
 
         //parse first line
+        std::string paramsStr = lines[0].substr(0, lines[0].find('?'));
+        this->params = paramsStr;
         std::string methodStr = lines[0].substr(0, lines[0].find(' '));
         std::string::size_type begin = lines[0].find(methodStr);
         if (begin != std::string::npos)
         {
-            lines[0].erase(begin, methodStr.length() + 1);
+            lines[0].erase(begin, methodStr.length() + 1); //save the params and not only the path
         }
         method = getMethodByString(methodStr);
         path = lines[0].substr(0, lines[0].find(' '));
+        std::cout << path;
         this->parseVector(lines);
     }
     void HeaderRequest::printFile()

@@ -61,6 +61,7 @@ namespace HTTP
         std::string host;
         Method method;
         std::string path;
+        std::string params;
         std::string userAgent;
         std::string accept;
         std::string acceptLanguage;

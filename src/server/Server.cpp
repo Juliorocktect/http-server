@@ -3,7 +3,7 @@ void Server::createSocket()
 {
 }
 
-int startServer(int port,PathListener *pathListener)
+int startServer(int port, PathListener *pathListener)
 {
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd == -1)

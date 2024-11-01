@@ -3,19 +3,24 @@
 #include "src/http/HTTP.h"
 #include "src/server/Server.h"
 #include "src/httpHandler/Handler.h"
-
-std::string add(){
-    return std::string("functioncalled");
+#include <vector>
+#include <any>
+std::string add(std::vector<std::any> params)
+{
+    if (params[0].type() == typeid(int))
+    {
+        std::cout << "[Info]\t" << std::any_cast<int>(params[0]) << "\n";
+    }
+    else
+    {
+        std::cerr << "[Error] falsche typ";
+    }
+    return ""; //core dumped wenn kein return da ist <:(
 }
 
 int main(int argc, char const *argv[])
 {
-    /*  HTTP::Date *dat = new HTTP::Date(HTTP::WeekDay::Sat, 23, HTTP::Month::Okt, 2024);
-    HTTP::HeaderRequest headerR = HTTP::HeaderRequest();
-    headerR.processRequest("/home/julio/Documents/code/http/Request.txt");
-    headerR.printFile(); */
-    PathListener *lis = new PathListener();
-    
-    //lis->pathsListenTo.push_back(PathLinker(std::string("/user"),&add);
-    return startServer(9090,);
+    PathListener *listen = new PathListener();
+    listen->addNewPath(PathLinker(std::string("/user"), &add));
+    return startServer(9090, listen);
 }
