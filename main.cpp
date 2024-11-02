@@ -5,17 +5,14 @@
 #include "src/httpHandler/Handler.h"
 #include <vector>
 #include <any>
-std::string add(std::vector<std::any> params)
+#include <map>
+std::string add(std::map<std::string, std::string> &m)
 {
-    if (params[0].type() == typeid(int))
+    if (!m.at("id").empty())
     {
-        std::cout << "[Info]\t" << std::any_cast<int>(params[0]) << "\n";
+        std::cout << "[From function call]" << m.at("id") << std::endl;
     }
-    else
-    {
-        std::cerr << "[Error] falsche typ";
-    }
-    return ""; //core dumped wenn kein return da ist <:(
+    return ""; // core dumped wenn kein return da ist <:(
 }
 
 int main(int argc, char const *argv[])

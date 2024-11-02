@@ -4,27 +4,28 @@
 #include <any>
 #include <functional>
 #include <iostream>
+#include <map>
 // vllt ne callback funktion als parameter ?
-//der body der response sollte json sein
+// der body der response sollte json sein
 //
 
 class PathLinker
 {
 public:
     PathLinker();
-    PathLinker(std::string path, std::string (*pFptr)(std::vector<std::any>));
+    PathLinker(std::string path, std::string (*pFptr)(std::map<std::string, std::string> &m));
     std::string getPath() { return path; }
-    std::string (*fPtr)(std::vector<std::any> args);
+    std::string (*fPtr)(std::map<std::string, std::string> &m);
 
 private:
-    //MethodenPointer ptr;
+    // MethodenPointer ptr;
     std::string path;
 };
 class PathListener
 {
 private:
     std::vector<PathLinker> pathsListenTo;
-    std::vector<std::any> filterParams(std::string params);
+    std::map<std::string, std::string> filterParams(std::string params);
 
 public:
     PathListener();

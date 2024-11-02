@@ -90,13 +90,13 @@ namespace HTTP
     }
     void HeaderRequest::printFile()
     {
-        std::cout << host << "\n"
-                  << path << "\n"
-                  << userAgent << "\n"
-                  << accept << "\n"
-                  << acceptLanguage << "\n"
-                  << acceptEncoding << "\n"
-                  << referer << "\n"
-                  << connection << "\n";
+        std::cout << "[Host]\t" << host << "\n"
+                  << "[Path]\t" << path << "\n"
+                  << "[userAgent]\t" << userAgent << "\n"
+                  << "[accept]\t" << accept << "\n"
+                  << "[accept-language]\t" << acceptLanguage << "\n"
+                  << "[accept-encoding]\t" << acceptEncoding << "\n"
+                  << "[referer]\t" << referer << "\n"
+                  << "[connection]\t" << connection << "\n";
     }
 };

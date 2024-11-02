@@ -68,12 +68,12 @@ int startServer(int port, PathListener *pathListener)
                 std::cout << "Disconnected";
                 break;
             }
-            std::cout << std::string(buf, 0, recived) << std::endl;
+            //std::cout << std::string(buf, 0, recived) << std::endl;
             //process bytes
             HTTP::HeaderRequest *req = new HTTP::HeaderRequest();
             req->processRequest(std::string(buf, 0, recived));
-            pathListener->processPath(req->path);
             req->printFile();
+            pathListener->processPath(req->path);
             HTTP::Response response = HTTP::Response();
             response.statusCode = 200;
             std::string msg = response.buildResponse();
