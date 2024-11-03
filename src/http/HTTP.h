@@ -47,7 +47,7 @@ namespace HTTP
         unsigned int year;
         Date();
         Date(WeekDay pWeekDay, unsigned int pDay, Month pMonth, unsigned int year);
-        //current daytime
+        // current daytime
         ~Date();
         Date(std::string);
     };
@@ -71,18 +71,32 @@ namespace HTTP
         HeaderRequest();
         void processRequest(std::string fileLocation);
         void printFile();
-        //TODO: body content
+        // TODO: body content
+    };
+    class Codes
+    {
+    public:
+        const char *ok = "OK 200";
+        const char *bad_requst = "Bad Request 400";
+    };
+    class ContentTypes
+    {
     };
     class Response
     {
     public:
-        int statusCode;
+        // last modified?
+        const char *statusCode;
         Date date;
         std::string contentEncoding;
         std::string contentType;
-        std::string Server;
+        const std::string SERVER = "juli";
         unsigned int contentLength;
+        std::string connection;
+        std::string body;
         Response();
         std::string buildResponse();
+        std::string badRequest();
+        std::string notFound();
     };
 }

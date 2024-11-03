@@ -9,10 +9,11 @@ PathLinker::PathLinker(std::string pPath, std::string (*pFptr)(std::map<std::str
 PathListener::PathListener()
 {
 }
-void PathListener::processPath(std::string currentPath)
+std::string PathListener::processPath(std::string currentPath)
 {
     std::size_t location = currentPath.find("?");
     std::string pathWithOutParams;
+    std::string response;
     if (location == std::string::npos)
     {
         pathWithOutParams = currentPath;
@@ -26,10 +27,11 @@ void PathListener::processPath(std::string currentPath)
         if (pathsListenTo[i].getPath() == pathWithOutParams) // da fehlen die parameter
         {
             std::map<std::string, std::string> m = filterParams(currentPath);
-            pathsListenTo[i].fPtr(m);
-            return;
+            response = pathsListenTo[i].fPtr(m);
+            return response;
         }
     }
+    return HTTP::Response().notFound();
 }
 void PathListener::addNewPath(PathLinker linker)
 {

@@ -5,6 +5,7 @@
 #include <functional>
 #include <iostream>
 #include <map>
+#include "../http/HTTP.h"
 // vllt ne callback funktion als parameter ?
 // der body der response sollte json sein
 //
@@ -31,5 +32,5 @@ public:
     PathListener();
     ~PathListener();
     void addNewPath(PathLinker pLinker);
-    void processPath(std::string currentPath);
+    std::string processPath(std::string currentPath);
 };

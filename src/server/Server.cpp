@@ -12,7 +12,7 @@ int startServer(int port, PathListener *pathListener)
     hint.sin_family = AF_INET;
     hint.sin_port = htons(port);
     inet_pton(AF_INET, "127.0.0.1", &hint.sin_addr);
-    int opt = 1; //reusable ?
+    int opt = 1; // reusable ?
     setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt));
     if (bind(sockfd, (sockaddr *)&hint, sizeof(hint)) == -1)
     {
@@ -26,7 +26,7 @@ int startServer(int port, PathListener *pathListener)
     }
     while (1)
     {
-        //accept a connection
+        // accept a connection
         sockaddr_in client;
         socklen_t clientSize = sizeof(client);
 
@@ -36,7 +36,7 @@ int startServer(int port, PathListener *pathListener)
             std::cerr << "[Error] Failed to accept connection\n";
             return -4;
         }
-        //connection information
+        // connection information
         char host[NI_MAXHOST];
         char service[NI_MAXSERV];
         memset(host, 0, NI_MAXHOST);
@@ -53,7 +53,7 @@ int startServer(int port, PathListener *pathListener)
         }
 
         char buf[4096];
-        //recive msg
+        // recive msg
         while (1)
         {
             memset(buf, 0, 4096);
@@ -68,18 +68,15 @@ int startServer(int port, PathListener *pathListener)
                 std::cout << "Disconnected";
                 break;
             }
-            //std::cout << std::string(buf, 0, recived) << std::endl;
-            //process bytes
+            // std::cout << std::string(buf, 0, recived) << std::endl;
+            // process bytes
             HTTP::HeaderRequest *req = new HTTP::HeaderRequest();
             req->processRequest(std::string(buf, 0, recived));
-            req->printFile();
-            pathListener->processPath(req->path);
-            HTTP::Response response = HTTP::Response();
-            response.statusCode = 200;
-            std::string msg = response.buildResponse();
-            send(clientSocket, msg.c_str(), msg.length(), 0);
+            std::string response;
+            response = pathListener->processPath(req->path);
+            send(clientSocket, response.c_str(), response.length(), 0);
             close(clientSocket);
-            //close(sockfd);
+            // close(sockfd);
             break;
         }
     }
