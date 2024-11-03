@@ -13,7 +13,7 @@ namespace HTTP
     Date::~Date() {}
     HeaderRequest::HeaderRequest()
     {
-        //muss man die atrribute initialisieren?
+        // muss man die atrribute initialisieren?
     }
     Method HTTP::HeaderRequest::getMethodByString(std::string methodStr)
     {
@@ -67,25 +67,24 @@ namespace HTTP
     {
         std::istringstream issFromData(data);
         std::string line;
-        std::vector<std::string> lines; //read out lines and store in vector
+        std::vector<std::string> lines; // read out lines and store in vector
 
         while (getline(issFromData, line))
         {
             lines.push_back(line);
         }
 
-        //parse first line
+        // parse first line
         std::string paramsStr = lines[0].substr(0, lines[0].find('?'));
         this->params = paramsStr;
         std::string methodStr = lines[0].substr(0, lines[0].find(' '));
         std::string::size_type begin = lines[0].find(methodStr);
         if (begin != std::string::npos)
         {
-            lines[0].erase(begin, methodStr.length() + 1); //save the params and not only the path
+            lines[0].erase(begin, methodStr.length() + 1); // save the params and not only the path
         }
         method = getMethodByString(methodStr);
         path = lines[0].substr(0, lines[0].find(' '));
-        std::cout << path;
         this->parseVector(lines);
     }
     void HeaderRequest::printFile()
@@ -98,5 +97,44 @@ namespace HTTP
                   << "[accept-encoding]\t" << acceptEncoding << "\n"
                   << "[referer]\t" << referer << "\n"
                   << "[connection]\t" << connection << "\n";
+    }
+    Response::Response() {}
+    std::string Response::buildResponse()
+    {
+        std::string res;
+        res.append(std::string("HTTP/1.1 "));
+        res.append(statusCode + std::string("\n"));
+        res.append("Date: xxx" + std::string("\n"));
+        res.append("Server: " + this->SERVER + std::string("\n"));
+        res.append("Content-Length: " + std::to_string(contentLength) + std::string("\n"));
+        res += "Content-Type: " + this->contentType + std::string("\n");
+        res += "Connection: " + this->connection + std::string("\n");
+        res.append(std::string("\n"));
+        res.append(body);
+        return res;
+    }
+    std::string Response::badRequest()
+    {
+        std::string res;
+        res.append(std::string("HTTP/1.1 "));
+        res.append(std::string("400 Bad Request\n"));
+        res.append("Date: xxx" + std::string("\n"));
+        res.append("Server: " + this->SERVER + std::string("\n"));
+        res += "Connection: " + std::string("close\n");
+        res.append(std::string("\n"));
+        res.append(body);
+        return res;
+    }
+    std::string Response::notFound()
+    {
+        std::string res;
+        res.append(std::string("HTTP/1.1 "));
+        res.append(std::string("404 Not Found\n"));
+        res.append("Date: xxx" + std::string("\n"));
+        res.append("Server: " + this->SERVER + std::string("\n"));
+        res += "Connection: " + std::string("close\n");
+        res.append(std::string("\n"));
+        res.append(body);
+        return res;
     }
 };
