@@ -18,6 +18,11 @@ std::string homeResponse(std::map<std::string, std::string> &m)
     res.contentLength = fileContent.size();
     return res.buildResponse();
 }
+std::string jsonResponse(std::map<std::string, std::string> &m)
+{
+    HTTP::Response res;
+    return res.buildResponse();
+}
 void linkFunctions(PathListener *lis)
 {
     lis->addNewPath(PathLinker(std::string("/lul"), &homeResponse));

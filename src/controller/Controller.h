@@ -8,3 +8,4 @@
 
 void linkFunctions(PathListener *lis);
 std::string homeResponse(std::map<std::string, std::string> &m);
+std::string jsonResponse(std::map<std::string, std::string> &m);
