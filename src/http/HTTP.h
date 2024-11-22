@@ -76,8 +76,8 @@ namespace HTTP
     class Codes
     {
     public:
-        const char *ok = "OK 200";
-        const char *bad_requst = "Bad Request 400";
+        const char *OK = "OK 200";
+        const char *BAD_REQUEST = "Bad Request 400";
     };
     class ContentTypes
     {
