@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <sstream>
+#include <ctime>
 namespace HTTP
 {
     enum Method // TODO: muss mir da was einfallen lassen
@@ -50,6 +51,7 @@ namespace HTTP
         // current daytime
         ~Date();
         Date(std::string);
+        std::string getCurrentDateTime();
     };
     class HeaderRequest
     {

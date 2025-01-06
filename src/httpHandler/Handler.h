@@ -6,6 +6,7 @@
 #include <iostream>
 #include <map>
 #include "../http/HTTP.h"
+#include <thread>
 // vllt ne callback funktion als parameter ?
 // der body der response sollte json sein
 //
@@ -34,3 +35,6 @@ public:
     void addNewPath(PathLinker pLinker);
     std::string processPath(std::string currentPath);
 };
+
+
+bool handleConnectionTime();

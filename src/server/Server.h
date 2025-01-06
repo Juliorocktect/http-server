@@ -9,19 +9,29 @@
 #include <netdb.h>
 #include "../http/HTTP.h"
 #include "../httpHandler/Handler.h"
+#include <thread>
+#include <chrono>
 
 class Server
 {
 public:
-    Server(const char *host, const char *port);
+    Server(const char *host, int port,PathListener* pPathListener);
     ~Server();
+    void sendData(int clientSocket,std::string data);
     int start();
-    void stop();
+    void closeSocket();
 
 private:
-    const char *host;
-    const char *port;
-    int socket;
+    PathListener* pathListener;
+    int sockfd,port;
+    const char* host;
+    struct sockaddr_in serverAddr;
     void createSocket();
+    int bindToPort();
+    int acceptClientConnection();
+    std::string reciveData(int clientSocket);
+    std::string processBytes(std::string request);
 };
-int startServer(int port,PathListener *listener);
+
+// TODO: add thread support
+int startServer(int port, PathListener *listener);
