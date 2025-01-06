@@ -11,16 +11,16 @@ PathListener::PathListener()
 }
 std::string PathListener::processPath(std::string currentPath)
 {
-    std::size_t location = currentPath.find("?");
+    std::size_t locationIfParamsExist = currentPath.find("?");
     std::string pathWithOutParams;
     std::string response;
-    if (location == std::string::npos)
+    if (locationIfParamsExist == std::string::npos)
     {
         pathWithOutParams = currentPath;
     }
     else
     {
-        pathWithOutParams = currentPath.substr(0, location);
+        pathWithOutParams = currentPath.substr(0, locationIfParamsExist);
     }
     for (int i = 0; i < pathsListenTo.size(); i++)
     {

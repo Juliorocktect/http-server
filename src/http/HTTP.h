@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <sstream>
+#include <ctime>
 namespace HTTP
 {
     enum Method // TODO: muss mir da was einfallen lassen
@@ -50,6 +51,7 @@ namespace HTTP
         // current daytime
         ~Date();
         Date(std::string);
+        std::string getCurrentDateTime();
     };
     class HeaderRequest
     {
@@ -76,8 +78,8 @@ namespace HTTP
     class Codes
     {
     public:
-        const char *ok = "OK 200";
-        const char *bad_requst = "Bad Request 400";
+        const char *OK = "OK 200";
+        const char *BAD_REQUEST = "Bad Request 400";
     };
     class ContentTypes
     {
