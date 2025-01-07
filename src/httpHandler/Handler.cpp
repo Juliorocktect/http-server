@@ -13,7 +13,7 @@ std::string PathListener::processPath(std::string currentPath)
 {
     std::size_t locationIfParamsExist = currentPath.find("?");
     std::string pathWithOutParams;
-    std::string response;
+    Response response;
     if (locationIfParamsExist == std::string::npos)
     {
         pathWithOutParams = currentPath;
@@ -27,7 +27,7 @@ std::string PathListener::processPath(std::string currentPath)
         if (pathsListenTo[i].getPath() == pathWithOutParams) // da fehlen die parameter
         {
             std::map<std::string, std::string> m = filterParams(currentPath);
-            response = pathsListenTo[i].fPtr(m);
+            std::string response = pathsListenTo[i].fPtr(m);
             return response;
         }
     }

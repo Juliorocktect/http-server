@@ -36,5 +36,14 @@ public:
     std::string processPath(std::string currentPath);
 };
 
-
+struct Keep_alive{
+    int timeout;
+    int max;
+    int useKeepAlive;
+};
+struct Response{
+    std::string HTTP_Response;
+    int exitCode;
+    Keep_alive keepAlive;
+};
 bool handleConnectionTime();

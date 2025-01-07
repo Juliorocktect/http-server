@@ -70,6 +70,7 @@ namespace HTTP
         std::string acceptEncoding;
         std::string referer;
         std::string connection;
+        std::string keepAlive;
         HeaderRequest();
         void processRequest(std::string fileLocation);
         void printFile();

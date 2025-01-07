@@ -131,7 +131,7 @@ int Server::bindToPort()
 int Server::acceptClientConnection()
 {
     //creating vars for the client
-    while (1)
+    while (1)// var running is true
     {
         struct sockaddr_in clientAddr;
         socklen_t clientSize = sizeof(clientAddr);
@@ -145,9 +145,8 @@ int Server::acceptClientConnection()
     }
     return 1;// return nicht vergessen :) sonst core dumpedd
 }
-std::string Server::reciveData(int clientSocket)
+Response Server::reciveData(int clientSocket)
 {
-    // 1 durchlauf dannach timeout oder so 
     char buf[4096];
     memset(buf, 0, 4096);
     std::string recievedData;
@@ -155,24 +154,40 @@ std::string Server::reciveData(int clientSocket)
     if (receivedBytes == -1)
     {
         std::cerr << "[Error] in transmitting data\n";
-        return "-1";
+        Response res;
+        res.exitCode = -1;
+        return res;
     }
     if (receivedBytes == 0)
     {
-        std::cout << "[Info] Disconnected\n";
-        return "1";
+        //std::cout << "[Info] Disconnected\n";// oder der client sendet nix 
+        Response res;
+        res.exitCode = 1;
+        return res;
     }
     //process bytes
     std::string request = std::string(buf, 0, receivedBytes);
-    std::string result = this->processBytes(request);
+    Response result = this->processBytes(request); 
     return result;
 }
-std::string Server::processBytes(std::string request)
+Response Server::processBytes(std::string request)
 {
     HTTP::HeaderRequest *req = new HTTP::HeaderRequest();
     req->processRequest(request);
-    std::string response;
-    response = pathListener->processPath(req->path);
+    Response response;
+    if (req->connection.compare("keep-alive")){
+        Keep_alive keepAlive;
+        keepAlive.useKeepAlive = 1;
+        if (req->keepAlive.length() != 0)
+        {
+            keepAlive.max = 5;
+            keepAlive.timeout = 5;
+        }else{
+            // use values from header atribute Keep-Alive:
+        }
+        response.keepAlive = keepAlive;
+    }
+    response.HTTP_Response = pathListener->processPath(req->path);
     return response;
 }
 void Server::handleClientConnection(int clientSocket_fd,sockaddr* client_addr)
@@ -194,12 +209,44 @@ void Server::handleClientConnection(int clientSocket_fd,sockaddr* client_addr)
             inet_ntop(AF_INET, &clientAddr->sin_addr, client_ip, INET_ADDRSTRLEN);
             std::cout << host << " connected on port:\t " << ntohs(clientAddr->sin_port)<< "\nWith IP:\t" << client_ip << std::endl;
     }
-    std::string response = reciveData(clientSocket_fd);
-    sendData(clientSocket_fd,response);
-    //check for connection keep-alive and timeout
+    //first contact -> check for keep-alive
+    Response response = reciveData(clientSocket_fd);
+    sendData(clientSocket_fd,response.HTTP_Response);
+    if (response.keepAlive.useKeepAlive)
+    {
+        int requestsDone = response.keepAlive.max;
+        std::promise<int> timerPromise;
+        std::future<int> timerFuture = timerPromise.get_future();
+        std::thread timerThread(&Server::startTimer,this,std::move(timerPromise),5);
+        while (requestsDone > 0 && (timerFuture.wait_for(std::chrono::seconds(0)) != std::future_status::ready))
+        {
+            Response response = reciveData(clientSocket_fd);
+            sendData(clientSocket_fd,response.HTTP_Response);
+            requestsDone--;
+        }
+        timerThread.join();
+        
+    }
+    while (0) //promised not fullfilled
+    {
+        Response res = reciveData(clientSocket_fd);
+        sendData(clientSocket_fd,res.HTTP_Response);
+        //check for connection keep-alive and timeout
+    }
+    std::cout << "disconnect" << std::endl;
     close(clientSocket_fd);
 }
 void Server::sendData(int clientSocket,std::string data)
 {
     send(clientSocket,data.c_str(),data.length(),0);
+}
+void Server::startTimer(std::promise<int>&& promise,int duration)
+{
+        while (duration)
+    {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        duration--;
+        std::cout<< duration << std::endl;
+    }
+    promise.set_value(1);
 }

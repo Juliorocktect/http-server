@@ -11,6 +11,7 @@
 #include "../httpHandler/Handler.h"
 #include <thread>
 #include <chrono>
+#include <future>
 
 class Server
 {
@@ -30,9 +31,11 @@ private:
     int bindToPort();
     void handleClientConnection(int clientSocket_fd,struct sockaddr* client_addr);
     int acceptClientConnection();
-    std::string reciveData(int clientSocket);
-    std::string processBytes(std::string request);
+    Response reciveData(int clientSocket);
+    Response processBytes(std::string request);
+    void startTimer(std::promise<int>&& promise,int duration);
 };
+
 
 // TODO: add thread support
 int startServer(int port, PathListener *listener);
