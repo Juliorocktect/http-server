@@ -46,7 +46,7 @@ int startServer(int port, PathListener *pathListener)
         {
             std::cout << "[Info] Connected\n";
         }
-        else
+        else 
         {
             inet_ntop(AF_INET, &client.sin_addr, host, NI_MAXHOST);
             std::cout << host << " connected on port " << ntohs(client.sin_port) << std::endl;
@@ -94,7 +94,7 @@ int Server::start(){
     sockfd = socket(AF_INET,SOCK_STREAM,0);
     if (sockfd == -1)
     {
-        delete &sockfd;
+        closeSocket();
         return -1;
     }
     if (bindToPort() == -1)
@@ -102,14 +102,11 @@ int Server::start(){
     if (listen(sockfd,SOMAXCONN) == -1)
     {
         std::cerr << "Can't listen to port";
+        closeSocket();
         return -3;
     }
     //accepting connections in new thread
-    while(1)
-    {
-        acceptClientConnection();
-    }
-    closeSocket();
+    acceptClientConnection();
     return 1;
 }
 void Server::closeSocket()
@@ -134,59 +131,18 @@ int Server::bindToPort()
 int Server::acceptClientConnection()
 {
     //creating vars for the client
-    sockaddr_in client;
-    socklen_t clientSize = sizeof(client);
-    int clientSocket = accept(sockfd, (sockaddr*) &client,&clientSize);
-    if (clientSocket == -1)//Error handling
+    while (1)
     {
-
-        std::cerr << "[Error] Failed to accept connection\n";
-        return -4;
+        struct sockaddr_in clientAddr;
+        socklen_t clientSize = sizeof(clientAddr);
+        int clientSocket_fd = accept(sockfd,(sockaddr*) &clientAddr,&clientSize);
+        if (clientSocket_fd == -1)//Error handling
+        {
+            std::cerr << "[Error] Failed to accept connection\n";
+        }
+        //handle connection
+        std::thread(&Server::handleClientConnection,this,clientSocket_fd,(sockaddr* )&clientAddr).detach();
     }
-    //information about connection
-    char host[NI_MAXHOST];
-    char service[NI_MAXSERV];
-    memset(host, 0, NI_MAXHOST);
-    memset(service, 0, NI_MAXSERV);
-    if (getnameinfo((sockaddr*)&client,sizeof(client), host, NI_MAXHOST,service,NI_MAXSERV,0) == 0)
-    {
-        std::cout << "Connected\n";
-    } else
-    {
-        inet_ntop(AF_INET, &client.sin_addr, host, NI_MAXHOST);
-        std::cout << host << " connected on port " << ntohs(client.sin_port) << std::endl; 
-    } 
-    // recieve and send data
-     char buf[4096];
-    while (1){
-            memset(buf, 0, 4096);
-            int recived = recv(clientSocket, buf, 4096, 0);
-            if (recived == -1)
-            {
-                std::cerr << "[Error] error in transmitting Data\n";
-                break;
-            }
-            if (recived == 0)
-            {
-                std::cout << "Disconnected"; 
-                break;
-            }
-            // std::cout << std::string(buf, 0, recived) << std::endl;
-            // process bytes
-            HTTP::HeaderRequest *req = new HTTP::HeaderRequest();
-            req->processRequest(std::string(buf, 0, recived));
-            std::string response;
-            response = pathListener->processPath(req->path);
-            send(clientSocket, response.c_str(), response.length(), 0);
-            // wenn timer vorhanden warten sons thread schließen und socket schließen
-        /* std::string response;
-        response = reciveData(clientSocket);
-        std::cout << response << "\n";
-        send(clientSocket,"OK",2,0); */
-    }
-    // von vorher wiederholen bis auf den verbindungsaufbau
-
-    close(clientSocket);
     return 1;// return nicht vergessen :) sonst core dumpedd
 }
 std::string Server::reciveData(int clientSocket)
@@ -194,32 +150,56 @@ std::string Server::reciveData(int clientSocket)
     // 1 durchlauf dannach timeout oder so 
     char buf[4096];
     memset(buf, 0, 4096);
-    int recived = recv(clientSocket,buf,4096,0);
-    if (recived == -1)
+    std::string recievedData;
+    int receivedBytes = recv(clientSocket,buf,sizeof(buf),0);
+    if (receivedBytes == -1)
     {
         std::cerr << "[Error] in transmitting data\n";
         return "-1";
     }
-    if (recived == 0)
+    if (receivedBytes == 0)
     {
         std::cout << "[Info] Disconnected\n";
         return "1";
     }
     //process bytes
-    std::string request = std::string(buf, 0, recived);
+    std::string request = std::string(buf, 0, receivedBytes);
     std::string result = this->processBytes(request);
     return result;
 }
 std::string Server::processBytes(std::string request)
 {
-    std::cout << request;
     HTTP::HeaderRequest *req = new HTTP::HeaderRequest();
     req->processRequest(request);
     std::string response;
     response = pathListener->processPath(req->path);
     return response;
 }
+void Server::handleClientConnection(int clientSocket_fd,sockaddr* client_addr)
+{
+    char host[NI_MAXHOST];
+    char service[NI_MAXSERV];
+    char client_ip[INET_ADDRSTRLEN];
+    memset(host, 0, NI_MAXHOST);
+    memset(service, 0, NI_MAXSERV);
+    memset(client_ip, 0, INET_ADDRSTRLEN);
+    sockaddr_in *clientAddr= (sockaddr_in*) client_addr;
+    if (getnameinfo(client_addr, sizeof(client_addr),host,NI_MAXHOST,service,NI_MAXSERV,0) == 0)
+    {
+        std::cout << "[Info] Connected\n Host:\t" << host << "\nservice:\t"<<service << "\n";
+    }
+    else // in case of disconnecting base information saved sth security i guess normal behaviour
+    {
+            inet_ntop(AF_INET, &clientAddr->sin_addr, host, NI_MAXHOST);
+            inet_ntop(AF_INET, &clientAddr->sin_addr, client_ip, INET_ADDRSTRLEN);
+            std::cout << host << " connected on port:\t " << ntohs(clientAddr->sin_port)<< "\nWith IP:\t" << client_ip << std::endl;
+    }
+    std::string response = reciveData(clientSocket_fd);
+    sendData(clientSocket_fd,response);
+    //check for connection keep-alive and timeout
+    close(clientSocket_fd);
+}
 void Server::sendData(int clientSocket,std::string data)
 {
-    send(clientSocket,data.c_str(),data.length(),0);//TODO: Error handling
+    send(clientSocket,data.c_str(),data.length(),0);
 }

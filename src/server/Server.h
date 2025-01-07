@@ -28,6 +28,7 @@ private:
     struct sockaddr_in serverAddr;
     void createSocket();
     int bindToPort();
+    void handleClientConnection(int clientSocket_fd,struct sockaddr* client_addr);
     int acceptClientConnection();
     std::string reciveData(int clientSocket);
     std::string processBytes(std::string request);
