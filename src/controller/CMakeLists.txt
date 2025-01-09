@@ -1,1 +1,1 @@
-add_library(controller Controller.h Controller.cpp)
+add_library(controller Controller.h Controller.cpp ../repo/Repo.h ../repo/Repo.cpp)

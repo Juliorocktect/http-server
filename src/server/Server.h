@@ -37,5 +37,4 @@ private:
 };
 
 
-// TODO: add thread support
 int startServer(int port, PathListener *listener);

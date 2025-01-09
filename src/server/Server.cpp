@@ -106,11 +106,11 @@ int Server::start(){
         return -3;
     }
     //accepting connections in new thread
-    acceptClientConnection();
-    return 1;
+    return acceptClientConnection();
 }
 void Server::closeSocket()
 {
+    std::cout << "Shut down\n";
     close(sockfd);
 }
 Server::~Server(){}
@@ -214,24 +214,18 @@ void Server::handleClientConnection(int clientSocket_fd,sockaddr* client_addr)
     sendData(clientSocket_fd,response.HTTP_Response);
     if (response.keepAlive.useKeepAlive)
     {
-        int requestsDone = response.keepAlive.max;
+        //int requestsDone = response.keepAlive.max;//TODO: repond with keep alive?
         std::promise<int> timerPromise;
         std::future<int> timerFuture = timerPromise.get_future();
         std::thread timerThread(&Server::startTimer,this,std::move(timerPromise),5);
-        while (requestsDone > 0 && (timerFuture.wait_for(std::chrono::seconds(0)) != std::future_status::ready))
+        while (/* requestsDone > 0 && */ (timerFuture.wait_for(std::chrono::seconds(0)) != std::future_status::ready))
         {
             Response response = reciveData(clientSocket_fd);
             sendData(clientSocket_fd,response.HTTP_Response);
-            requestsDone--;
+            //requestsDone--;
         }
         timerThread.join();
         
-    }
-    while (0) //promised not fullfilled
-    {
-        Response res = reciveData(clientSocket_fd);
-        sendData(clientSocket_fd,res.HTTP_Response);
-        //check for connection keep-alive and timeout
     }
     std::cout << "disconnect" << std::endl;
     close(clientSocket_fd);
@@ -246,7 +240,6 @@ void Server::startTimer(std::promise<int>&& promise,int duration)
     {
         std::this_thread::sleep_for(std::chrono::seconds(1));
         duration--;
-        std::cout<< duration << std::endl;
     }
     promise.set_value(1);
 }
