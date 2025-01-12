@@ -9,4 +9,4 @@
 - optimize imports for CMake
 - different encodings gzip...
 - how to know how big read buffer must be (securities)
-- fix core dumped when
+- program ends when switching paths => keep alive?

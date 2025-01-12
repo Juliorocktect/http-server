@@ -5,6 +5,7 @@
 #include <string>
 #include <fstream>
 #include "../httpHandler/Handler.h"
+#include "../repo/Repo.h"
 
 std::string buildJson();
 void linkFunctions(PathListener *lis);

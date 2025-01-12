@@ -208,14 +208,14 @@ void Server::handleClientConnection(int clientSocket_fd,sockaddr* client_addr)
         std::promise<int> timerPromise;
         std::future<int> timerFuture = timerPromise.get_future();
         std::thread timerThread(&Server::startTimer,this,std::move(timerPromise),timeoutPtr);
-        while (maxConnections > 1 && (timerFuture.wait_for(std::chrono::seconds(0)) != std::future_status::ready))
+        while (/* maxConnections > 1 &&  */(timerFuture.wait_for(std::chrono::seconds(0)) != std::future_status::ready))
         {
             HTTP::Response response = reciveData(clientSocket_fd);//wenn neue anfrage timer thread aktualisieren
-            if (!std::string(response.statusCode).compare("-1") == 0 | !std::string(response.statusCode).compare("-2") == 0)//wenn verbindung besteht
+/*             if (!std::string(response.statusCode).compare("-1") == 0 | !std::string(response.statusCode).compare("-2") == 0)//wenn verbindung besteht
             {
                 timeout = 5;
                 maxConnections--;
-            }
+            } */
             sendData(clientSocket_fd,response.buildResponse());
 
             
@@ -236,7 +236,7 @@ void Server::sendData(int clientSocket,std::string data)
 }
 void Server::startTimer(std::promise<int>&& promise,int* duration)
 {
-        while (duration)
+        while (*duration)
     {
         std::this_thread::sleep_for(std::chrono::seconds(1));
         *duration--;
