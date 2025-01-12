@@ -8,6 +8,6 @@
 
 std::string buildJson();
 void linkFunctions(PathListener *lis);
-std::string homeResponse(std::map<std::string, std::string> &m);
+HTTP::Response homeResponse(std::map<std::string, std::string> &m);
 std::string jsonResponse(std::map<std::string, std::string> &m);
-std::string processParams(std::map<std::string, std::string> &m);
+HTTP::Response processParams(std::map<std::string, std::string> &m);

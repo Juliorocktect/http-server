@@ -1,21 +1,20 @@
 #include "HTTP.h"
 
-namespace HTTP
-{
-    HTTP::Date::Date() {}
-    Date::Date(HTTP::WeekDay pWeekDay, unsigned int pDay, Month pMonth, unsigned int pYear)
+namespace HTTP{
+     Date::Date() {}
+    Date::Date(WeekDay pWeekDay, unsigned int pDay, Month pMonth, unsigned int pYear)
     {
         weekDay = pWeekDay;
         day = pDay;
         month = pMonth;
         year = pYear;
     }
-    Date::~Date() {}
-    HeaderRequest::HeaderRequest()
+    HTTP::Date::~Date() {}
+    HTTP::HeaderRequest::HeaderRequest()
     {
         // muss man die atrribute initialisieren?
     }
-    Method HTTP::HeaderRequest::getMethodByString(std::string methodStr)
+    HTTP::Method HTTP::HeaderRequest::getMethodByString(std::string methodStr)
     {
         if (methodStr == "GET")
             return HTTP::Method::GET;
@@ -87,7 +86,8 @@ namespace HTTP
         path = lines[0].substr(0, lines[0].find(' '));
         this->parseVector(lines);
     }
-    void HeaderRequest::printFile()
+    
+    void HTTP::HeaderRequest::printFile()
     {
         std::cout << "[Host]\t" << host << "\n"
                   << "[Path]\t" << path << "\n"
@@ -98,8 +98,8 @@ namespace HTTP
                   << "[referer]\t" << referer << "\n"
                   << "[connection]\t" << connection << "\n";
     }
-    Response::Response() {}
-    std::string Response::buildResponse()
+    HTTP::Response::Response() {}
+    std::string HTTP::Response::buildResponse()
     {
         std::string res;
         res.append(std::string("HTTP/1.1 "));
@@ -109,11 +109,20 @@ namespace HTTP
         res.append("Content-Length: " + std::to_string(contentLength) + std::string("\n"));
         res += "Content-Type: " + this->contentType + std::string("\n");
         res += "Connection: " + this->connection + std::string("\n");
+        if (this->connection.compare("keep-alive") == 0)
+        {
+            std::string keepConnection;
+            keepConnection.append("Keep-Alive: timeout=");
+            keepConnection.append(std::to_string(keepALiveTimeout));
+            keepConnection.append(",max=" +  std::to_string(keepAliveMax));
+            res.append(keepConnection);
+            res.append(std::string("\n"));
+        }
         res.append(std::string("\n"));
         res.append(body);
         return res;
     }
-    std::string Response::badRequest()
+    std::string HTTP::Response::badRequest()
     {
         std::string res;
         res.append(std::string("HTTP/1.1 "));
@@ -137,4 +146,6 @@ namespace HTTP
         res.append(body);
         return res;
     }
+
 };
+   

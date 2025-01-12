@@ -31,9 +31,9 @@ private:
     int bindToPort();
     void handleClientConnection(int clientSocket_fd,struct sockaddr* client_addr);
     int acceptClientConnection();
-    Response reciveData(int clientSocket);
-    Response processBytes(std::string request);
-    void startTimer(std::promise<int>&& promise,int duration);
+    HTTP::Response reciveData(int clientSocket);
+    HTTP::Response processBytes(std::string request);
+    void startTimer(std::promise<int>&& promise,int *duration);
 };
 
 

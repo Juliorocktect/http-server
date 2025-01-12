@@ -72,9 +72,9 @@ int startServer(int port, PathListener *pathListener)
             // process bytes
             HTTP::HeaderRequest *req = new HTTP::HeaderRequest();
             req->processRequest(std::string(buf, 0, recived));
-            std::string response;
-            response = pathListener->processPath(req->path);
-            send(clientSocket, response.c_str(), response.length(), 0);
+            
+            HTTP::Response response = pathListener->processPath(req->path);
+            send(clientSocket, response.buildResponse().c_str(), response.buildResponse().length(), 0);
             // wenn timer vorhanden warten sons thread schließen und socket schließen
             close(clientSocket);
         }
@@ -145,7 +145,7 @@ int Server::acceptClientConnection()
     }
     return 1;// return nicht vergessen :) sonst core dumpedd
 }
-Response Server::reciveData(int clientSocket)
+HTTP::Response Server::reciveData(int clientSocket)
 {
     char buf[4096];
     memset(buf, 0, 4096);
@@ -154,41 +154,29 @@ Response Server::reciveData(int clientSocket)
     if (receivedBytes == -1)
     {
         std::cerr << "[Error] in transmitting data\n";
-        Response res;
-        res.exitCode = -1;
+        HTTP::Response res;
+        res.statusCode = "-1";
         return res;
     }
     if (receivedBytes == 0)
     {
         //std::cout << "[Info] Disconnected\n";// oder der client sendet nix 
-        Response res;
-        res.exitCode = 1;
+        HTTP::Response res;
+        res.statusCode = "-2";
         return res;
     }
     //process bytes
+    // change int 
     std::string request = std::string(buf, 0, receivedBytes);
-    Response result = this->processBytes(request); 
+    HTTP::Response result = this->processBytes(request); 
     return result;
 }
-Response Server::processBytes(std::string request)
+HTTP::Response Server::processBytes(std::string request)
 {
     HTTP::HeaderRequest *req = new HTTP::HeaderRequest();
     req->processRequest(request);
-    Response response;
-    if (req->connection.compare("keep-alive")){
-        Keep_alive keepAlive;
-        keepAlive.useKeepAlive = 1;
-        if (req->keepAlive.length() != 0)
-        {
-            keepAlive.max = 5;
-            keepAlive.timeout = 5;
-        }else{
-            // use values from header atribute Keep-Alive:
-        }
-        response.keepAlive = keepAlive;
-    }
-    response.HTTP_Response = pathListener->processPath(req->path);
-    return response;
+    HTTP::Response res =  pathListener->processPath(req->path);
+    return res;
 }
 void Server::handleClientConnection(int clientSocket_fd,sockaddr* client_addr)
 {
@@ -210,21 +198,33 @@ void Server::handleClientConnection(int clientSocket_fd,sockaddr* client_addr)
             std::cout << host << " connected on port:\t " << ntohs(clientAddr->sin_port)<< "\nWith IP:\t" << client_ip << std::endl;
     }
     //first contact -> check for keep-alive
-    Response response = reciveData(clientSocket_fd);
-    sendData(clientSocket_fd,response.HTTP_Response);
-    if (response.keepAlive.useKeepAlive)
+    HTTP::Response response = reciveData(clientSocket_fd);
+    sendData(clientSocket_fd,response.buildResponse());
+    if (response.connection.compare("keep-alive") == 0)
     {
-        //int requestsDone = response.keepAlive.max;//TODO: repond with keep alive?
+        int maxConnections = MAX_CONNECTIONS;
+        int timeout = 5;
+        int* timeoutPtr = &timeout;
         std::promise<int> timerPromise;
         std::future<int> timerFuture = timerPromise.get_future();
-        std::thread timerThread(&Server::startTimer,this,std::move(timerPromise),5);
-        while (/* requestsDone > 0 && */ (timerFuture.wait_for(std::chrono::seconds(0)) != std::future_status::ready))
+        std::thread timerThread(&Server::startTimer,this,std::move(timerPromise),timeoutPtr);
+        while (maxConnections > 1 && (timerFuture.wait_for(std::chrono::seconds(0)) != std::future_status::ready))
         {
-            Response response = reciveData(clientSocket_fd);
-            sendData(clientSocket_fd,response.HTTP_Response);
-            //requestsDone--;
+            HTTP::Response response = reciveData(clientSocket_fd);//wenn neue anfrage timer thread aktualisieren
+            if (!std::string(response.statusCode).compare("-1") == 0 | !std::string(response.statusCode).compare("-2") == 0)//wenn verbindung besteht
+            {
+                timeout = 5;
+                maxConnections--;
+            }
+            sendData(clientSocket_fd,response.buildResponse());
+
+            
         }
-        timerThread.join();
+        timerThread.join();// reset timer with new Request
+        //last request
+        HTTP::Response response = reciveData(clientSocket_fd);
+        response.connection = std::string("close");
+        sendData(clientSocket_fd,response.buildResponse());
         
     }
     std::cout << "disconnect" << std::endl;
@@ -234,12 +234,12 @@ void Server::sendData(int clientSocket,std::string data)
 {
     send(clientSocket,data.c_str(),data.length(),0);
 }
-void Server::startTimer(std::promise<int>&& promise,int duration)
+void Server::startTimer(std::promise<int>&& promise,int* duration)
 {
         while (duration)
     {
         std::this_thread::sleep_for(std::chrono::seconds(1));
-        duration--;
+        *duration--;
     }
     promise.set_value(1);
 }

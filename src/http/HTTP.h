@@ -5,6 +5,10 @@
 #include <iostream>
 #include <sstream>
 #include <ctime>
+//#include "../httpHandler/Handler.h"
+
+int const MAX_CONNECTIONS = 10;
+int const TIMEOUT = 5;
 namespace HTTP
 {
     enum Method // TODO: muss mir da was einfallen lassen
@@ -97,6 +101,8 @@ namespace HTTP
         unsigned int contentLength;
         std::string connection;
         std::string body;
+        int keepAliveMax;
+        int keepALiveTimeout;
         Response();
         std::string buildResponse();
         std::string badRequest();

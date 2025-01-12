@@ -7,17 +7,19 @@
 #include <map>
 #include "../http/HTTP.h"
 #include <thread>
+
 // vllt ne callback funktion als parameter ?
 // der body der response sollte json sein
 //
+
 
 class PathLinker
 {
 public:
     PathLinker();
-    PathLinker(std::string path, std::string (*pFptr)(std::map<std::string, std::string> &m));
-    std::string getPath() { return path; }
-    std::string (*fPtr)(std::map<std::string, std::string> &m);
+    PathLinker(std::string path, HTTP::Response (*pFptr)(std::map<std::string, std::string> &m));
+    std::string getPath() { return this->path; }
+    HTTP::Response (*fPtr)(std::map<std::string, std::string> &m);
 
 private:
     // MethodenPointer ptr;
@@ -33,7 +35,7 @@ public:
     PathListener();
     ~PathListener();
     void addNewPath(PathLinker pLinker);
-    std::string processPath(std::string currentPath);
+    HTTP::Response processPath(std::string currentPath);
 };
 
 struct Keep_alive{
@@ -41,9 +43,5 @@ struct Keep_alive{
     int max;
     int useKeepAlive;
 };
-struct Response{
-    std::string HTTP_Response;
-    int exitCode;
-    Keep_alive keepAlive;
-};
+
 bool handleConnectionTime();

@@ -1,6 +1,6 @@
 #include "./Controller.h"
 
-std::string homeResponse(std::map<std::string, std::string> &m)
+HTTP::Response homeResponse(std::map<std::string, std::string> &m)
 {
     HTTP::Response res;
     std::ifstream file("/home/julio/Documents/code/http/src/controller/Response.html");
@@ -13,10 +13,12 @@ std::string homeResponse(std::map<std::string, std::string> &m)
     }
     res.body = fileContent;
     res.statusCode = HTTP::Codes().OK;
-    res.connection = "close";
+    res.connection = "keep-alive";
     res.contentType = "text/html; charset=utf-8";
+    res.keepAliveMax = 20;
+    res.keepALiveTimeout = 5;
     res.contentLength = fileContent.size();
-    return res.buildResponse();
+    return res;
 }
 std::string jsonResponse(std::map<std::string, std::string> &m)
 {
@@ -28,7 +30,7 @@ void linkFunctions(PathListener *lis)
     lis->addNewPath(PathLinker(std::string("/lul"), &homeResponse));
     lis->addNewPath(PathLinker(std::string("/test"), &processParams));
 }
-std::string processParams(std::map<std::string, std::string> &m)
+HTTP::Response processParams(std::map<std::string, std::string> &m)
 {
     HTTP::Response res;
     if (m.count("id"))
@@ -42,13 +44,13 @@ std::string processParams(std::map<std::string, std::string> &m)
         badRes.contentLength = 0;
         badRes.connection = "close";
         badRes.statusCode = HTTP::Codes().BAD_REQUEST;
-        return badRes.buildResponse();
+        return badRes;
     }
     res.statusCode = HTTP::Codes().OK;
     res.connection = "close";
     res.contentType = "text/json; charset=utf-8";
     res.contentLength = res.body.size();
-    return res.buildResponse();
+    return res;
 }
 std::string buildJson()
 {

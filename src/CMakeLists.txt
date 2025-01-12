@@ -1,6 +1,9 @@
-add_library(http ./http/HTTP.h ./http/HTTP.cpp ./http/Response.cpp)
-
-add_library(server ./server/Server.h ./server/Server.cpp)
-
+add_library(http ./http/HTTP.h ./http/HTTP.cpp ./http/Response.cpp  )
 add_library(handler ./httpHandler/Handler.h ./httpHandler/Handler.cpp)
-add_subdirectory(controller)
+add_library(controller ./controller/Controller.h ./controller/Controller.cpp ./repo/Repo.h ./repo/Repo.cpp)
+add_library(server ./server/Server.h ./server/Server.cpp)
+link_directories(http httpHandler repo server controller)
+target_link_libraries(http PUBLIC handler)
+target_link_libraries(handler PUBLIC http)
+target_link_libraries(controller PUBLIC http)
+target_link_libraries(server PUBLIC http)

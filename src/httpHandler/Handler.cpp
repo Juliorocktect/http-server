@@ -1,6 +1,6 @@
 #include "./Handler.h"
 
-PathLinker::PathLinker(std::string pPath, std::string (*pFptr)(std::map<std::string, std::string> &m))
+PathLinker::PathLinker(std::string pPath, HTTP::Response (*pFptr)(std::map<std::string, std::string> &m))
 {
     path = pPath;
     fPtr = pFptr;
@@ -9,11 +9,10 @@ PathLinker::PathLinker(std::string pPath, std::string (*pFptr)(std::map<std::str
 PathListener::PathListener()
 {
 }
-std::string PathListener::processPath(std::string currentPath)
+HTTP::Response PathListener::processPath(std::string currentPath)
 {
     std::size_t locationIfParamsExist = currentPath.find("?");
     std::string pathWithOutParams;
-    Response response;
     if (locationIfParamsExist == std::string::npos)
     {
         pathWithOutParams = currentPath;
@@ -27,11 +26,15 @@ std::string PathListener::processPath(std::string currentPath)
         if (pathsListenTo[i].getPath() == pathWithOutParams) // da fehlen die parameter
         {
             std::map<std::string, std::string> m = filterParams(currentPath);
-            std::string response = pathsListenTo[i].fPtr(m);
-            return response;
+            HTTP::Response response = pathsListenTo[i].fPtr(m);
+            return response; 
         }
     }
-    return HTTP::Response().notFound();
+    HTTP::Response res;
+    res.connection = std::string("close");
+    res.statusCode = "404 Not Found";
+    res.contentLength = 0;    
+    return res;
 }
 void PathListener::addNewPath(PathLinker linker)
 {
