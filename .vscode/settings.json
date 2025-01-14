@@ -76,7 +76,9 @@
     "stop_token": "cpp",
     "thread": "cpp",
     "valarray": "cpp",
-    "future": "cpp"
+    "future": "cpp",
+    "pqxx": "cpp",
+    "source_location": "cpp"
   },
   "sqltools.connections": [
     {

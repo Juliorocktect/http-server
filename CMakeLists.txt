@@ -9,6 +9,7 @@ target_link_libraries(webb PUBLIC -lpqxx -lpq http )
 target_link_libraries(webb PUBLIC handler)
 target_link_libraries(webb PUBLIC server)
 target_link_libraries(webb PUBLIC controller)
+target_link_libraries(webb PUBLIC repo)
 
 
 

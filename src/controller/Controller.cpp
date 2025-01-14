@@ -29,6 +29,7 @@ void linkFunctions(PathListener *lis)
 {
     lis->addNewPath(PathLinker(std::string("/lul"), &homeResponse));
     lis->addNewPath(PathLinker(std::string("/test"), &processParams));
+    lis->addNewPath(PathLinker(std::string("/addUser"),&addUser));
 }
 HTTP::Response processParams(std::map<std::string, std::string> &m)
 {
@@ -54,4 +55,22 @@ HTTP::Response processParams(std::map<std::string, std::string> &m)
 }
 std::string buildJson()
 {
+}
+HTTP::Response addUser(std::map<std::string, std::string> &m){
+    if (!m.count("userName") || !m.count("pictureUrl"))
+    {
+        HTTP::Response badRes;
+        badRes.body = std::string("");
+        badRes.contentLength = 0;
+        badRes.connection = "close";
+        badRes.statusCode = HTTP::Codes().BAD_REQUEST;
+        return badRes;
+    }
+    Repo::insertUserIntoDatabase(m.at("userName"),m.at("pictureUrl"));
+    HTTP::Response response;
+    response.connection = "close";
+    response.contentLength = 0;
+    response.statusCode = HTTP::Codes().OK;
+    return response;
+
 }

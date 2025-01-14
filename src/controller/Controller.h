@@ -12,3 +12,4 @@ void linkFunctions(PathListener *lis);
 HTTP::Response homeResponse(std::map<std::string, std::string> &m);
 std::string jsonResponse(std::map<std::string, std::string> &m);
 HTTP::Response processParams(std::map<std::string, std::string> &m);
+HTTP::Response addUser(std::map<std::string, std::string> &m);
